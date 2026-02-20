@@ -17,12 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('/login.php');
     }
 
-    $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id, password_hash FROM users WHERE email = :email LIMIT 1');
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
+    $user = findUserByEmail($email);
 
-    if (!$user || !password_verify($password, $user['password_hash'])) {
+    if (!$user || !password_verify($password, (string) $user['password_hash'])) {
         setFlash('error', 'Credenciais inválidas.');
         redirect('/login.php');
     }

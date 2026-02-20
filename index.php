@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/functions.php';
 
-$pdo = getPDO();
 $search = trim($_GET['search'] ?? '');
-
-if ($search !== '') {
-    $stmt = $pdo->prepare('SELECT id, title, synopsis, release_year, seasons, genre, cover_url FROM series WHERE title LIKE :search OR genre LIKE :search ORDER BY created_at DESC');
-    $stmt->execute(['search' => "%{$search}%"]);
-} else {
-    $stmt = $pdo->query('SELECT id, title, synopsis, release_year, seasons, genre, cover_url FROM series ORDER BY created_at DESC');
-}
-
-$seriesList = $stmt->fetchAll();
+$seriesList = getSeries($search);
 
 require_once __DIR__ . '/includes/header.php';
 ?>

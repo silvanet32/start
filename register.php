@@ -28,27 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('/register.php');
     }
 
-    $pdo = getPDO();
-
-    $existsStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
-    $existsStmt->execute(['email' => $email]);
-    if ($existsStmt->fetch()) {
+    if (findUserByEmail($email)) {
         setFlash('error', 'Este e-mail já está em uso.');
         redirect('/register.php');
     }
 
-    $countUsers = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
-    $role = $countUsers === 0 ? 'admin' : 'user';
-
-    $stmt = $pdo->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :password_hash, :role)');
-    $stmt->execute([
-        'name' => $name,
-        'email' => $email,
-        'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-        'role' => $role,
-    ]);
-
-    $_SESSION['user_id'] = (int) $pdo->lastInsertId();
+    $role = countUsers() === 0 ? 'admin' : 'user';
+    $userId = createUser($name, $email, password_hash($password, PASSWORD_DEFAULT), $role);
+    $_SESSION['user_id'] = $userId;
 
     setFlash('success', 'Conta criada com sucesso!');
     redirect('/index.php');

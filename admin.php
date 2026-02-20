@@ -7,8 +7,6 @@ require_once __DIR__ . '/includes/functions.php';
 requireLogin();
 requireAdmin();
 
-$pdo = getPDO();
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $synopsis = trim($_POST['synopsis'] ?? '');
@@ -27,22 +25,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('/admin.php');
     }
 
-    $stmt = $pdo->prepare('INSERT INTO series (title, synopsis, release_year, seasons, genre, cover_url, created_by) VALUES (:title, :synopsis, :release_year, :seasons, :genre, :cover_url, :created_by)');
-    $stmt->execute([
+    createSeries([
         'title' => $title,
         'synopsis' => $synopsis,
         'release_year' => $releaseYear,
         'seasons' => $seasons,
         'genre' => $genre,
         'cover_url' => $coverUrl,
-        'created_by' => currentUser()['id'],
-    ]);
+    ], (int) currentUser()['id']);
 
     setFlash('success', 'Mini série adicionada com sucesso!');
     redirect('/admin.php');
 }
 
-$series = $pdo->query('SELECT id, title, release_year, genre FROM series ORDER BY created_at DESC')->fetchAll();
+$series = getSeries();
 
 require_once __DIR__ . '/includes/header.php';
 ?>
