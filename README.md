@@ -10,19 +10,20 @@ Site em PHP para catálogo de mini séries, com:
 ## Requisitos
 
 - PHP 8+
-- Extensão `pdo` habilitada.
 - Banco de dados:
   - **MySQL/MariaDB** com extensão `pdo_mysql`, ou
-  - **SQLite** com extensão `pdo_sqlite`.
+  - **SQLite** com extensão `pdo_sqlite`, ou
+  - **SQLite3 nativo** com extensão `sqlite3` (fallback sem PDO).
 
 ## Configuração rápida (recomendada)
 
-Por padrão, o sistema usa **modo automático**:
+No modo automático (`DB_CONNECTION` ausente), a prioridade é:
 
-- se `pdo_mysql` existir, usa MySQL;
-- caso contrário, tenta SQLite.
+1. `mysql` (se `pdo_mysql` existir)
+2. `sqlite` (se `pdo_sqlite` existir)
+3. `sqlite3` (se extensão `sqlite3` existir)
 
-Se SQLite estiver disponível, o arquivo é criado automaticamente em:
+Arquivo padrão SQLite/SQLite3:
 
 - `storage/miniseries.sqlite`
 
@@ -45,7 +46,7 @@ export DB_USER=root
 export DB_PASS=''
 ```
 
-## Como configurar SQLite
+## Como configurar SQLite (PDO)
 
 ```bash
 export DB_CONNECTION=sqlite
@@ -53,7 +54,15 @@ export DB_CONNECTION=sqlite
 export DB_SQLITE_PATH=/caminho/para/miniseries.sqlite
 ```
 
-> As tabelas do SQLite são criadas automaticamente na primeira execução.
+## Como configurar SQLite3 (sem PDO)
+
+```bash
+export DB_CONNECTION=sqlite3
+# opcional:
+export DB_SQLITE_PATH=/caminho/para/miniseries.sqlite
+```
+
+> As tabelas SQLite/SQLite3 são criadas automaticamente na primeira execução.
 
 ## Rodando o projeto
 
@@ -71,16 +80,17 @@ http://localhost:8000/index.php
 
 Se aparecer esse erro:
 
-1. Verifique drivers disponíveis:
+1. Verifique extensões disponíveis:
 
 ```bash
 php -m
 ```
 
-2. Habilite no `php.ini` uma destas opções:
+2. Escolha uma opção:
 
-- `extension=pdo_mysql` (MySQL)
-- `extension=pdo_sqlite` (SQLite)
+- Habilitar `pdo_mysql` e usar MySQL.
+- Habilitar `pdo_sqlite` e usar SQLite via PDO.
+- Habilitar `sqlite3` e usar `DB_CONNECTION=sqlite3`.
 
 3. Reinicie o servidor PHP.
 
@@ -90,7 +100,7 @@ php -m
 - `register.php` / `login.php`: autenticação.
 - `admin.php`: cadastro de séries (somente admin).
 - `includes/`: header, footer e funções utilitárias.
-- `config/database.php`: conexão PDO (MySQL/SQLite com fallback).
+- `config/database.php`: conexão de banco com fallback MySQL/SQLite/SQLite3.
 - `sql/schema.sql`: script do MySQL.
 - `assets/css/style.css`: visual do template.
 
